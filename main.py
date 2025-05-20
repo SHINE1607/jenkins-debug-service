@@ -203,7 +203,7 @@ def get_gemini_analysis(status_message: str, stack_trace: str, description: str)
     }
     
     # Get API key from environment variable
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = 'AIzaSyCDSyBtofxUkuL5YWKWiNbSvuu2uD7vYPU'
     if not api_key:
         print("Warning: No API key found for Gemini. Using default analysis.")
         return default_response
@@ -283,19 +283,24 @@ def get_gemini_analysis(status_message: str, stack_trace: str, description: str)
 
 def main():
     parser = argparse.ArgumentParser(description='Process Jenkins test report JSON files')
-    parser.add_argument('input_file', help='Path to the Jenkins test report JSON file')
+    parser.add_argument('input_files', nargs='+', help='Path(s) to the Jenkins test report JSON file(s)')
     parser.add_argument('--output', help='Path to save the output JSON file (optional)')
     
     args = parser.parse_args()
     
-    debug_info = parse_jenkins_test_report(args.input_file)
+    # Prepare a list of results, each as {file_name: debug_info}
+    results = []
+    for input_file in args.input_files:
+        file_name = os.path.basename(input_file)
+        debug_info = parse_jenkins_test_report(input_file)
+        results.append({file_name: debug_info})
     
     if args.output:
         with open(args.output, 'w') as f:
-            json.dump(debug_info, f, indent=2)
+            json.dump(results, f, indent=2)
         print(f"Debug information saved to {args.output}")
     else:
-        print(json.dumps(debug_info, indent=2))
+        print(json.dumps(results, indent=2))
 
 if __name__ == "__main__":
     main()
